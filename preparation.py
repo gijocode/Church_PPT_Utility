@@ -4,6 +4,7 @@ import collections.abc
 from pptx import Presentation
 
 prs = Presentation("templates/PPT English Service.pptx")
+prs.slides[0].name = "Title"
 prs.slides[1].name = "Opening Hymn"
 prs.slides[2].name = "First Lesson"
 prs.slides[3].name = "Song between Lessons"
