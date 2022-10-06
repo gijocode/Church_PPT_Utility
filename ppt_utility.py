@@ -2,13 +2,15 @@ import collections
 import collections.abc
 import os
 from datetime import datetime
+from sys import platform
 
 from pptx import Presentation
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT
 
 from bible_extractor import BibleExtractor
 
-bible_ext = BibleExtractor()
+clear_str = "cls" if platform.startswith("win") else "clear"
+bible_ext = BibleExtractor(clear_str)
 prs = Presentation("templates/PPT English Service.pptx")
 slide_contents = {
     "Opening Hymn": "",
@@ -26,8 +28,10 @@ slide_contents = {
 slide_map = {slide.name: slide for slide in prs.slides}
 
 # Title slide modifications
-ppt_date = input("Enter date in dd-mm-yy format")
-theme = input("Enter the theme for this Sunday")
+ppt_date = input("Enter date in dd-mm-yy format\n")
+os.system(clear_str)  # If using windows, use 'cls'
+theme = input("Enter the theme for this Sunday\n")
+os.system(clear_str)  # If using windows, use 'cls'
 title_slide = slide_map["Title"]
 title_slide.shapes[2].text = datetime.strptime(ppt_date, "%d-%m-%y").strftime(
     "%d %B, %Y"
@@ -67,15 +71,20 @@ with open("output_bible_portions/gospel.txt", "w") as gospel_file:
 # Here we will update the songs for various sections
 
 slide_contents["Opening Hymn"] = input("\nEnter opening hymn\n")
-slide_contents["Song between Lessons"] = input("\nEnter song between lessons")
+os.system(clear_str)  # If using windows, use 'cls'
+slide_contents["Song between Lessons"] = input("\nEnter song between lessons\n")
+os.system(clear_str)  # If using windows, use 'cls'
 slide_contents["Birthday,Wedding"] = input("\nEnter birthday hymn\n")
+os.system(clear_str)  # If using windows, use 'cls'
 slide_contents["Offertory"] = input("\nEnter offertory hymn\n")
+os.system(clear_str)  # If using windows, use 'cls'
 no_of_communion_songs = int(input("\nEnter no of communion songs: "))
 comm_songs = []
 for i in range(no_of_communion_songs):
-    comm_songs.append(input(f"Enter song no {i+1}\n"))
+    comm_songs.append(input(f"Enter communion song no {i+1}\n"))
 slide_contents["Communion Songs"] = "\n".join(comm_songs)
-slide_contents["Doxology"] = input("\nEnter Doxology Hymn")
+os.system(clear_str)  # If using windows, use 'cls'
+slide_contents["Doxology"] = input("\nEnter Doxology Hymn\n")
 
 # Fill the slides with collected values
 for slide, slide_text in slide_contents.items():
@@ -86,7 +95,7 @@ for slide, slide_text in slide_contents.items():
         paragraph.alignment = PP_PARAGRAPH_ALIGNMENT.CENTER  # type: ignore
 
 
-os.system("clear")  # If using windows, use 'cls'
+os.system(clear_str)  # If using windows, use 'cls'
 
 
 # Saving final PPT with updated portions and songs

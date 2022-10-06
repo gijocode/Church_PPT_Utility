@@ -9,11 +9,12 @@ class BibleExtractor:
     Utility for extracting verses from the bible.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, clear_str) -> None:
         """
         King James Version Used.
         Assigning the books for old,new testament, gospels and epistles
         """
+        self.clear_str = clear_str
         with open("assets/en_kjv.json", encoding="utf-8-sig") as bible_file:
             self.bible = json.load(
                 bible_file,
@@ -45,27 +46,27 @@ class BibleExtractor:
         pass
 
     def get_first_lesson(self):
-        os.system("clear")
         print("Select First Lesson")
         book, chapter, verses = self.select_verses(self.old_testament)
+        os.system(self.clear_str)
         return self.get_verses(book, chapter, verses)
 
     def get_second_lesson(self):
-        os.system("clear")
         print("Select Second Lesson")
         book, chapter, verses = self.select_verses(self.new_testament)
+        os.system(self.clear_str)
         return self.get_verses(book, chapter, verses)
 
     def get_epistle(self):
-        os.system("clear")
         print("Select Epistle")
         book, chapter, verses = self.select_verses(self.epistles)
+        os.system(self.clear_str)
         return self.get_verses(book, chapter, verses)
 
     def get_gospel(self):
-        os.system("clear")
         print("Select Gospel")
         book, chapter, verses = self.select_verses(self.gospels)
+        os.system(self.clear_str)
         return self.get_verses(book, chapter, verses)
 
     def get_verses(self, book, chapter, verses):
@@ -99,5 +100,5 @@ class BibleExtractor:
 
 
 if __name__ == "__main__":
-    bible_extract = BibleExtractor()
+    bible_extract = BibleExtractor("clear")
     bible_extract.get_gospel()
