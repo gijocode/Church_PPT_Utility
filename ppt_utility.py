@@ -1,3 +1,8 @@
+'''
+    @author Gijo Varughese Mathew; github.com/gijocode
+    @year 2022
+'''
+
 import collections
 import collections.abc
 import os
@@ -98,4 +103,4 @@ os.system(clear_str)
 
 # Saving final PPT with updated portions and songs
 prs.save("output_ppt/updated_ppt_for_service.pptx")
-print("Saved the PPT!")
+print("Saved the PPT to output_ppt/updated_ppt_for_service.pptx")

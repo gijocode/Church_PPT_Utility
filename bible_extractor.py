@@ -1,3 +1,8 @@
+"""
+    @author Gijo Varughese Mathew; github.com/gijocode
+    @year 2022
+"""
+
 import json
 import os
 import re
