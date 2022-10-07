@@ -1,7 +1,14 @@
 import json
 import os
 import re
-from unittest.mock import patch
+
+
+def clear_console(func):
+    def wrapper(self):
+        os.system(self.clear_str)
+        return func(self)
+
+    return wrapper
 
 
 class BibleExtractor:
@@ -45,28 +52,28 @@ class BibleExtractor:
         """Miscellaneous Function."""
         pass
 
+    @clear_console
     def get_first_lesson(self):
         print("Select First Lesson")
         book, chapter, verses = self.select_verses(self.old_testament)
-        os.system(self.clear_str)
         return self.get_verses(book, chapter, verses)
 
+    @clear_console
     def get_second_lesson(self):
         print("Select Second Lesson")
         book, chapter, verses = self.select_verses(self.new_testament)
-        os.system(self.clear_str)
         return self.get_verses(book, chapter, verses)
 
+    @clear_console
     def get_epistle(self):
         print("Select Epistle")
         book, chapter, verses = self.select_verses(self.epistles)
-        os.system(self.clear_str)
         return self.get_verses(book, chapter, verses)
 
+    @clear_console
     def get_gospel(self):
         print("Select Gospel")
         book, chapter, verses = self.select_verses(self.gospels)
-        os.system(self.clear_str)
         return self.get_verses(book, chapter, verses)
 
     def get_verses(self, book, chapter, verses):

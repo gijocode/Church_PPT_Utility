@@ -29,14 +29,14 @@ slide_map = {slide.name: slide for slide in prs.slides}
 
 # Title slide modifications
 ppt_date = input("Enter date in dd-mm-yy format\n")
-os.system(clear_str)  # If using windows, use 'cls'
+os.system(clear_str)
 theme = input("Enter the theme for this Sunday\n")
-os.system(clear_str)  # If using windows, use 'cls'
+os.system(clear_str)
 title_slide = slide_map["Title"]
 title_slide.shapes[2].text = datetime.strptime(ppt_date, "%d-%m-%y").strftime(
     "%d %B, %Y"
 )
-title_slide.shapes[2].text_frame.fit_text(font_family="Arial", max_size=100)
+title_slide.shapes[2].text_frame.fit_text(font_family="Arial", max_size=90)
 title_slide.shapes[2].text_frame.paragraphs[0].alignment = PP_PARAGRAPH_ALIGNMENT.CENTER  # type: ignore
 
 title_slide.shapes[4].text = f"Theme: {theme}"
@@ -71,19 +71,19 @@ with open("output_bible_portions/gospel.txt", "w") as gospel_file:
 # Here we will update the songs for various sections
 
 slide_contents["Opening Hymn"] = input("\nEnter opening hymn\n")
-os.system(clear_str)  # If using windows, use 'cls'
+os.system(clear_str)
 slide_contents["Song between Lessons"] = input("\nEnter song between lessons\n")
-os.system(clear_str)  # If using windows, use 'cls'
+os.system(clear_str)
 slide_contents["Birthday,Wedding"] = input("\nEnter birthday hymn\n")
-os.system(clear_str)  # If using windows, use 'cls'
+os.system(clear_str)
 slide_contents["Offertory"] = input("\nEnter offertory hymn\n")
-os.system(clear_str)  # If using windows, use 'cls'
+os.system(clear_str)
 no_of_communion_songs = int(input("\nEnter no of communion songs: "))
 comm_songs = []
 for i in range(no_of_communion_songs):
     comm_songs.append(input(f"Enter communion song no {i+1}\n"))
 slide_contents["Communion Songs"] = "\n".join(comm_songs)
-os.system(clear_str)  # If using windows, use 'cls'
+os.system(clear_str)
 slide_contents["Doxology"] = input("\nEnter Doxology Hymn\n")
 
 # Fill the slides with collected values
@@ -94,9 +94,7 @@ for slide, slide_text in slide_contents.items():
     for paragraph in text_element.text_frame.paragraphs:
         paragraph.alignment = PP_PARAGRAPH_ALIGNMENT.CENTER  # type: ignore
 
-
-os.system(clear_str)  # If using windows, use 'cls'
-
+os.system(clear_str)
 
 # Saving final PPT with updated portions and songs
 prs.save("output_ppt/updated_ppt_for_service.pptx")
