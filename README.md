@@ -15,8 +15,8 @@ This project works only on the PPT in the `templates` folder. You can edit the P
 -   Open Command Prompt (Windows) or Terminal (MacOS/Linux).
 -   Navigate to this folder
     `cd /path/to/this/project/Church_PPT_Utility`
--   This project uses Python-PPTX package. Install it by running:
-    `pip install python-pptx`
+-   Install required packages by running:
+    `pip install -r requirements.txt`
 -   Once thats installed, you can run the utility by running `python3 ppt_utility.py` and follow the onscreen instructions
 -   Once done the updated PPT will be in the `output_ppt/updated_ppt_for_service.pptx` location
 -   The bible portions will be in the `output_bible_portions` folder.

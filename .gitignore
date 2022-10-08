@@ -2,3 +2,5 @@
 /__pycache__
 output_ppt/*
 output_bible_portions/*
+env/
+pyvenv.cfg
