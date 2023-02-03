@@ -42,6 +42,7 @@ The code is structured as follows:
 
 -   This project took _(annoyingly)_ more time than expected because of the severe limitations of the `python-pptx` library. If you examine the code you will see that even for obvious operations (such as adding a slide at a particular location in the Presentation), hacky workarounds needed to be used. But since this is the only library used for python + ppt, had to use the same.
 -   The songs data used only covers the songs from the **Kristeeya Keertanangal** book, so additional songs need to be manually added
+-   No error checking or handling done, so any error (such as invalid bible portions) will cause ugly errors and you will need to run the file again.
 
 ## Future Enhancements
 
