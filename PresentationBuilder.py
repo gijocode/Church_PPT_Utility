@@ -9,6 +9,7 @@ from lxml import etree
 from pptx import Presentation
 from pptx.enum.text import MSO_AUTO_SIZE, MSO_VERTICAL_ANCHOR, PP_ALIGN
 from pptx.oxml.ns import qn
+from pptx.util import Pt
 
 from BibleExtractor import BibleConverter
 
@@ -32,29 +33,20 @@ class PresentationBuilder(object):
 
     def __init__(self) -> None:
         self.presentation = Presentation("templates/malayalam_service_template.pptx")
-        self.template_dict = {}
-        for slide in self.presentation.slides:
-            for shape in slide.shapes:
-                if shape.name == "maltext":
-                    tf = shape.text_frame
-                    for p in tf.paragraphs:
-                        with open("xmlslide.xml", "w") as xmlfile:
-                            xmlfile.write(p._element.xml)
-                if shape.name in self.REQ_SLIDES:
-                    self.template_dict[shape.name] = slide
+        self.template_dict = {
+            shape.name: slide
+            for slide in self.presentation.slides
+            for shape in slide.shapes
+            if shape.name in self.REQ_SLIDES
+        }
         with open("assets/kk_full.json", "r") as kkfile:
             self.kk_dict = json.load(kkfile)
         self.bible_converter = BibleConverter()
 
     def duplicate_slide(self, template_slide):
-        try:
-            blank_slide_layout = self.presentation.slide_layouts[
-                len(self.presentation.slide_layouts) - 1
-            ]
-        except:
-            blank_slide_layout = self.presentation.slide_layouts[
-                len(self.presentation.slide_layouts)
-            ]
+        blank_slide_layout = self.presentation.slide_layouts[
+            len(self.presentation.slide_layouts) - 1
+        ]
 
         copied_slide = self.presentation.slides.add_slide(blank_slide_layout)
 
@@ -103,7 +95,7 @@ class PresentationBuilder(object):
 
     def get_bible_portions(self, portion_type):
 
-        os.system("clear")
+        print("\033c", end="")
         print(portion_type.replace("_", " ").upper())
         (
             book,
@@ -121,7 +113,7 @@ class PresentationBuilder(object):
         )
         # book, chapter, starting_verse, ending_verse = 1, 1, 2, 5
         bible_portion = [
-            "{5}\n\n{0} {1}: {2}-{3}\n\n{4} {1}: {2}-{3}".format(
+            "{5}\n\n{4} {1}: {2}-{3}\n{0} {1}: {2}-{3}".format(
                 self.bible_converter.bible_books_eng[book],
                 chapter + 1,
                 starting_verse + 1,
@@ -174,9 +166,15 @@ class PresentationBuilder(object):
                 )
             )
             song_lyrics = self.get_kk_lyrics(song_no)
-            self.put_in_ppt(song_lyrics, "template_song_verse", song_type)
+            self.put_in_ppt(song_lyrics, "template_song_verse", song_type, 1.5)
 
-    def put_in_ppt(self, content_list, template_name, after_slide):
+    def put_in_ppt(
+        self,
+        content_list: list[str],
+        template_name,
+        after_slide,
+        line_spacing: float = 1,
+    ):
         content_slides = []
         for content in content_list[::-1]:
             verse_slide = self.duplicate_slide(self.template_dict[template_name])
@@ -188,16 +186,20 @@ class PresentationBuilder(object):
                     tf.clear()
                     for para in tf.paragraphs:
                         para.text = content
+                        if content.count("\n") < 6:
+                            para.line_spacing = line_spacing
+
                         para.font.name = "Noto Serif Malayalam"
+                        para.font.size = (
+                            Pt(50)
+                            if template_name == "template_bible_heading"
+                            else Pt(40)
+                        )
+                        # Hacky workaround to work with malayalam fonts
                         defrpr = para._element.pPr.defRPr
                         ea = etree.SubElement(defrpr, qn("a:cs"))
                         ea.set("typeface", "Noto Serif Malayalam")
                         para.alignment = PP_ALIGN.CENTER
-                    try:
-                        tf.fit_text(font_family="Noto Serif Malayalam", max_size=40)
-                    except:
-                        # For some naughty lyrics, that don't fit in the slide
-                        tf.fit_text(font_family="Noto Serif Malayalam", max_size=35)
 
             content_slides.append(verse_slide)
         index_of_slide = self.presentation.slides.index(self.template_dict[after_slide])
@@ -205,20 +207,29 @@ class PresentationBuilder(object):
             self.move_slide(-1, index_of_slide + 1 + i)
 
     def save_ppt(self):
-        os.system("rm -rf Updated_PPT.pptx")
+        if os.path.exists("Updated_PPT.pptx"):
+            os.remove("Updated_PPT.pptx")
         self.presentation.save("Updated_PPT.pptx")
         print("PPT Successfullt saved to Updated_PPT.pptx")
         os.system("open Updated_PPT.pptx")
 
 
 obj1 = PresentationBuilder()
-portions = ["first_lesson", "second_lesson", "epistle", "gospel"]
-for p in portions:
-    obj1.get_bible_portions(p)
-os.system("clear")
-songs = ["opening_song", "between_lessons", "birthday", "offertory", "communion"]
-for song in songs:
+[
+    obj1.get_bible_portions(portion)
+    for portion in ["first_lesson", "second_lesson", "epistle", "gospel"]
+]
+print("\033c", end="")
+[
     obj1.get_song(song)
+    for song in (
+        "opening_song",
+        "between_lessons",
+        "birthday",
+        "offertory",
+        "communion",
+    )
+]
 obj1.update_first_slide(input("\nEnter the theme for this Sunday: "))
 
 obj1.save_ppt()

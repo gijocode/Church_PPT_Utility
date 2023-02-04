@@ -164,6 +164,47 @@ class BibleConverter:
         except IndexError:
             return ""
 
+    def get_bible_portions(self, portion_type):
+
+        print("\033c", end="")
+        print(portion_type.replace("_", " ").upper())
+        (
+            book,
+            chapter,
+            starting_verse,
+            ending_verse,
+        ) = self.get_input_from_user(portion_type)
+
+        book += (
+            39
+            if portion_type in ["second_lesson", "gospel"]
+            else 43
+            if portion_type == "epistle"
+            else 0
+        )
+        # book, chapter, starting_verse, ending_verse = 1, 1, 2, 5
+        bible_portion = [
+            "{5}\n\n{4} {1}: {2}-{3}\n{0} {1}: {2}-{3}".format(
+                self.bible_books_eng[book],
+                chapter + 1,
+                starting_verse + 1,
+                ending_verse + 1,
+                self.bible_books_mal[book],
+                portion_type.upper().replace("_", " "),
+            )
+        ]
+        portion = [
+            "{}\n\n{}".format(
+                self.extract_bible_portion(self.malbible, book, chapter, i),
+                self.extract_bible_portion(self.engbible, book, chapter, i),
+            )
+            for i in range(starting_verse, ending_verse + 1)
+        ]
+
+        # self.put_in_ppt(portion, "template_bible_verse", portion_type)
+        # self.put_in_ppt(bible_portion, "template_bible_heading", portion_type)
+        return bible_portion, portion
+
     def get_input_from_user(self, book_type="all"):
         books = self.mapper[book_type]
         book_printer = []
