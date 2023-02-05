@@ -18,6 +18,7 @@ class PresentationBuilder(object):
     REQ_SLIDES = [
         "first_slide",
         "communion",
+        "doxology",
         "offertory",
         "birthday",
         "gospel",
@@ -228,6 +229,7 @@ print("\033c", end="")
         "birthday",
         "offertory",
         "communion",
+        "doxology",
     )
 ]
 obj1.update_first_slide(input("\nEnter the theme for this Sunday: "))
