@@ -40,7 +40,7 @@ class PresentationBuilder(object):
             for shape in slide.shapes
             if shape.name in self.REQ_SLIDES
         }
-        with open("assets/kk_full.json", "r") as kkfile:
+        with open("assets/kk_full.json", "r", encoding="utf-8") as kkfile:
             self.kk_dict = json.load(kkfile)
         self.bible_converter = BibleConverter()
 
@@ -135,8 +135,8 @@ class PresentationBuilder(object):
             for i in range(starting_verse, ending_verse + 1)
         ]
 
-        self.put_in_ppt(portion, "template_bible_verse", portion_type)
-        self.put_in_ppt(bible_portion, "template_bible_heading", portion_type)
+        self.put_in_ppt(portion, "template_bible_verse", portion_type, 1)
+        self.put_in_ppt(bible_portion, "template_bible_heading", portion_type, 1)
 
     def update_first_slide(self, topic):
         first_slide = self.template_dict["first_slide"]
@@ -190,12 +190,12 @@ class PresentationBuilder(object):
                         if content.count("\n") < 6:
                             para.line_spacing = line_spacing
 
-                        para.font.name = "Noto Serif Malayalam"
-                        para.font.size = (
-                            Pt(50)
-                            if template_name == "template_bible_heading"
-                            else Pt(40)
-                        )
+                        if template_name == "template_bible_heading":
+                            para.font.name = "Noto Serif Malayalam"
+                            para.font.size = Pt(50)
+                        else:
+                            para.font.size = Pt(40)
+                            para.font.name = "Goudy Bookletter 1911"
                         # Hacky workaround to work with malayalam fonts
                         defrpr = para._element.pPr.defRPr
                         ea = etree.SubElement(defrpr, qn("a:cs"))

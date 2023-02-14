@@ -152,10 +152,10 @@ class BibleConverter:
             "epistle": self.epistles,
             "gospel": self.gospels,
         }
-        with open("assets/mal_bible.json", "r") as bible:
+        with open("assets/mal_bible.json", "r", encoding="utf-8") as bible:
             self.malbible = json.load(bible)
 
-        with open("assets/english_bible.json", "r") as bible:
+        with open("assets/english_bible.json", "r", encoding="utf-8") as bible:
             self.engbible = json.load(bible)
 
     def extract_bible_portion(self, bible, book, chapter, verse):
@@ -201,8 +201,6 @@ class BibleConverter:
             for i in range(starting_verse, ending_verse + 1)
         ]
 
-        # self.put_in_ppt(portion, "template_bible_verse", portion_type)
-        # self.put_in_ppt(bible_portion, "template_bible_heading", portion_type)
         return bible_portion, portion
 
     def get_input_from_user(self, book_type="all"):
