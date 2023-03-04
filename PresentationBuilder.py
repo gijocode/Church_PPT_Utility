@@ -94,24 +94,35 @@ class PresentationBuilder(object):
         lyrics_slide.insert(0, title)
         return lyrics_slide
 
-    def get_bible_portions(self, portion_type):
+    def get_bible_portions(self, bib_portion, gui=False):
 
-        print("\033c", end="")
-        print(portion_type.replace("_", " ").upper())
-        (
-            book,
-            chapter,
-            starting_verse,
-            ending_verse,
-        ) = self.bible_converter.get_input_from_user(portion_type)
+        if not gui:
+            print("\033c", end="")
+            portion_type = bib_portion
+            print(portion_type.replace("_", " ").upper())
+            (
+                book,
+                chapter,
+                starting_verse,
+                ending_verse,
+            ) = self.bible_converter.get_input_from_user(portion_type)
 
-        book += (
-            39
-            if portion_type in ["second_lesson", "gospel"]
-            else 43
-            if portion_type == "epistle"
-            else 0
-        )
+            book += (
+                39
+                if portion_type in ["second_lesson", "gospel"]
+                else 43
+                if portion_type == "epistle"
+                else 0
+            )
+        else:
+            book, chapter, starting_verse, ending_verse, portion_type = (
+                self.bible_converter.bible_books_eng.index(bib_portion["book"]),
+                int(bib_portion["chapter"]) - 1,
+                int(bib_portion["starting_verse"]) - 1,
+                int(bib_portion["ending_verse"]) - 1,
+                bib_portion["type"],
+            )
+
         # book, chapter, starting_verse, ending_verse = 1, 1, 2, 5
         bible_portion = [
             "{5}\n\n{4} {1}: {2}-{3}\n{0} {1}: {2}-{3}".format(
@@ -140,8 +151,12 @@ class PresentationBuilder(object):
 
     def update_first_slide(self, topic):
         first_slide = self.template_dict["first_slide"]
+        next_sunday = datetime.date.today() + datetime.timedelta(
+            days=(6 - datetime.date.today().weekday() + 7) % 7
+        )
         for shape in first_slide.shapes:
             if shape.name in ["theme", "todays_date"]:
+
                 tf = shape.text_frame
                 tf.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
                 tf.vertical_anchor = MSO_VERTICAL_ANCHOR.MIDDLE
@@ -149,25 +164,30 @@ class PresentationBuilder(object):
                     para.text = (
                         topic
                         if shape.name == "theme"
-                        else datetime.datetime.now().strftime("%-d %B, %Y")
+                        else next_sunday.strftime("%-d %B, %Y")
                     )
                     para.font.name = "Goudy Bookletter 1911"
                     para.alignment = PP_ALIGN.CENTER
                 tf.fit_text(font_family="Noto Serif Malayalam", max_size=40)
 
-    def get_song(self, song_type: str):
+    def get_song(self, song_type, gui=False):
 
-        no_of_songs = (
-            int(input("\nNo of communion songs: ")) if song_type == "communion" else 1
-        )
-        for _ in range(no_of_songs):
-            song_no = input(
-                "\nEnter song number for {}:".format(
-                    song_type.replace("_", " ").capitalize()
-                )
-            )
-            song_lyrics = self.get_kk_lyrics(song_no)
-            self.put_in_ppt(song_lyrics, "template_song_verse", song_type, 1.5)
+        if not gui:
+            songs = input(f"\nEnter songs for {song_type.replace('_',' ')}: ").split(
+                ","
+            )[::-1]
+            for song in songs:
+                if not song.isdigit() and not song.startswith("dox"):
+                    song_lyrics = [song]
+                else:
+                    song_lyrics = self.get_kk_lyrics(song)
+                self.put_in_ppt(song_lyrics, "template_song_verse", song_type, 1.5)
+        else:
+            song_nos, song_type = song_type["no"], song_type["type"]
+            songs = song_nos.split(",")[::-1]
+            for song_no in songs:
+                song_lyrics = self.get_kk_lyrics(song_no)
+                self.put_in_ppt(song_lyrics, "template_song_verse", song_type, 1.5)
 
     def put_in_ppt(
         self,
@@ -208,30 +228,42 @@ class PresentationBuilder(object):
             self.move_slide(-1, index_of_slide + 1 + i)
 
     def save_ppt(self):
-        if os.path.exists("Updated_PPT.pptx"):
-            os.remove("Updated_PPT.pptx")
-        self.presentation.save("Updated_PPT.pptx")
-        print("PPT Successfullt saved to Updated_PPT.pptx")
-        os.system("open Updated_PPT.pptx")
+        next_sunday = (
+            datetime.date.today()
+            + datetime.timedelta(days=(6 - datetime.date.today().weekday() + 7) % 7)
+        ).strftime("%-d %B, %Y")
+        ppt_name = f"{next_sunday}.pptx"
+        os.chdir("/Users/gijomathew/Important/misc/Church/PPTs/")
+        if os.path.exists(f"{ppt_name}"):
+            os.remove(f"{ppt_name}")
+        self.presentation.save(f"{ppt_name}")
+        print(
+            f"PPT Successfully saved to /Users/gijomathew/Important/misc/Church/PPTs/{ppt_name}"
+        )
+        os.system(f"open '{ppt_name}'")
 
 
-obj1 = PresentationBuilder()
-[
-    obj1.get_bible_portions(portion)
-    for portion in ["first_lesson", "second_lesson", "epistle", "gospel"]
-]
-print("\033c", end="")
-[
-    obj1.get_song(song)
-    for song in (
-        "opening_song",
-        "between_lessons",
-        "birthday",
-        "offertory",
-        "communion",
-        "doxology",
+if __name__ == "__main__":
+    obj1 = PresentationBuilder()
+    [
+        obj1.get_bible_portions(portion)
+        for portion in ["first_lesson", "second_lesson", "epistle", "gospel"]
+    ]
+    print("\033c", end="")
+    print(
+        "\nNote\n1. If multiple songs, enter comma separated. \n2. For doxology 1 enter dox1 and so on\n3. If song is from a book other than Kriteeya Geethangal, just type the song heading. (Lyrics wont be provided)"
     )
-]
-obj1.update_first_slide(input("\nEnter the theme for this Sunday: "))
+    [
+        obj1.get_song(song)
+        for song in (
+            "opening_song",
+            "between_lessons",
+            "birthday",
+            "offertory",
+            "communion",
+            "doxology",
+        )
+    ]
+    obj1.update_first_slide(input("\nEnter the theme for this Sunday: "))
 
-obj1.save_ppt()
+    obj1.save_ppt()

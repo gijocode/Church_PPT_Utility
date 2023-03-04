@@ -164,24 +164,33 @@ class BibleConverter:
         except IndexError:
             return ""
 
-    def get_bible_portions(self, portion_type):
+    def get_bible_portions(self, portion_type, gui=False):
 
-        print("\033c", end="")
-        print(portion_type.replace("_", " ").upper())
-        (
-            book,
-            chapter,
-            starting_verse,
-            ending_verse,
-        ) = self.get_input_from_user(portion_type)
+        if not gui:
+            print("\033c", end="")
+            print(portion_type.replace("_", " ").upper())
+            (
+                book,
+                chapter,
+                starting_verse,
+                ending_verse,
+            ) = self.get_input_from_user(portion_type)
 
-        book += (
-            39
-            if portion_type in ["second_lesson", "gospel"]
-            else 43
-            if portion_type == "epistle"
-            else 0
-        )
+            book += (
+                39
+                if portion_type in ["second_lesson", "gospel"]
+                else 43
+                if portion_type == "epistle"
+                else 0
+            )
+        else:
+            book, chapter, starting_verse, ending_verse = (
+                self.bible_books_eng.index(portion_type["book"]),
+                portion_type["chapter"],
+                portion_type["starting_verse"],
+                portion_type["ending_verse"],
+            )
+
         # book, chapter, starting_verse, ending_verse = 1, 1, 2, 5
         bible_portion = [
             "{5}\n\n{4} {1}: {2}-{3}\n{0} {1}: {2}-{3}".format(
