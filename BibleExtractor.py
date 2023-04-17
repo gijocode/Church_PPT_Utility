@@ -158,14 +158,6 @@ class BibleConverter:
         with open("assets/english_bible.json", "r", encoding="utf-8") as bible:
             self.engbible = json.load(bible)
 
-    def extract_bible_chapter(self, bible_lang, book, chapter):
-        try:
-            bible = self.malbible if bible_lang == "Malayalam" else self.engbible
-            book_no = self.bible_books_eng.index(book)
-            return bible["Book"][book_no]["Chapter"][chapter - 1]["Verse"]
-        except:
-            print("some error")
-
     def extract_bible_portion(self, bible, book, chapter, verse):
         try:
             return f'{verse+1} {bible["Book"][book]["Chapter"][chapter]["Verse"][verse]["Verse"]}'

@@ -2,15 +2,7 @@
 /__pycache__
 output_ppt/*
 output_bible_portions/*
+env/
 pyvenv.cfg
 .vscode/launch.json
 Updated_PPT.pptx
-build/
-dist/
-guitest.spec
-_rels/.rels
-.gitignore
-env
-platform-tools
-buildozer.spec
-.buildozer
