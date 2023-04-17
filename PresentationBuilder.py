@@ -32,8 +32,8 @@ class PresentationBuilder(object):
         "template_song_verse",
     ]
 
-    def __init__(self) -> None:
-        self.presentation = Presentation("templates/malayalam_service_template.pptx")
+    def __init__(self, service_type) -> None:
+        self.presentation = Presentation("templates/malayalam_service_template.pptx") if service_type == "Malayalam" else Presentation("templates/english_service_template.pptx")
         self.template_dict = {
             shape.name: slide
             for slide in self.presentation.slides
@@ -62,7 +62,6 @@ class PresentationBuilder(object):
                 copied_slide.part.rels.add_relationship(
                     value.reltype, value._target, value.rId
                 )
-
         return copied_slide
 
     @property
@@ -97,7 +96,7 @@ class PresentationBuilder(object):
     def get_bible_portions(self, bib_portion, gui=False):
 
         if not gui:
-            print("\033c", end="")
+            # print("\033c", end="")
             portion_type = bib_portion
             print(portion_type.replace("_", " ").upper())
             (
@@ -145,6 +144,7 @@ class PresentationBuilder(object):
             )
             for i in range(starting_verse, ending_verse + 1)
         ]
+        print(portion)
 
         self.put_in_ppt(portion, "template_bible_verse", portion_type, 1)
         self.put_in_ppt(bible_portion, "template_bible_heading", portion_type, 1)
@@ -167,8 +167,9 @@ class PresentationBuilder(object):
                         else next_sunday.strftime("%-d %B, %Y")
                     )
                     para.font.name = "Goudy Bookletter 1911"
+                    para.font.bold = True
                     para.alignment = PP_ALIGN.CENTER
-                tf.fit_text(font_family="Noto Serif Malayalam", max_size=40)
+                tf.fit_text(font_family="Noto Serif Malayalam", max_size=48)
 
     def get_song(self, song_type, gui=False):
 
@@ -213,9 +214,11 @@ class PresentationBuilder(object):
                         if template_name == "template_bible_heading":
                             para.font.name = "Noto Serif Malayalam"
                             para.font.size = Pt(50)
+                            para.font.bold = True
                         else:
                             para.font.size = Pt(40)
                             para.font.name = "Goudy Bookletter 1911"
+                            para.font.bold = True
                         # Hacky workaround to work with malayalam fonts
                         defrpr = para._element.pPr.defRPr
                         ea = etree.SubElement(defrpr, qn("a:cs"))
@@ -233,18 +236,19 @@ class PresentationBuilder(object):
             + datetime.timedelta(days=(6 - datetime.date.today().weekday() + 7) % 7)
         ).strftime("%-d %B, %Y")
         ppt_name = f"{next_sunday}.pptx"
-        os.chdir("/Users/gijomathew/Important/misc/Church/PPTs/")
+        os.chdir("/Users/gijomathew/Important/misc/Church/PPTs/2023")
         if os.path.exists(f"{ppt_name}"):
             os.remove(f"{ppt_name}")
         self.presentation.save(f"{ppt_name}")
         print(
-            f"PPT Successfully saved to /Users/gijomathew/Important/misc/Church/PPTs/{ppt_name}"
+            f"PPT Successfully saved to /Users/gijomathew/Important/misc/Church/PPTs/2023/{ppt_name}"
         )
         os.system(f"open '{ppt_name}'")
 
 
 if __name__ == "__main__":
-    obj1 = PresentationBuilder()
+    service_type = "Malayalam" if int(input("Enter Service type: \n1.Malayalam\n2.English\n")) ==1 else "English"
+    obj1 = PresentationBuilder(service_type)
     [
         obj1.get_bible_portions(portion)
         for portion in ["first_lesson", "second_lesson", "epistle", "gospel"]
