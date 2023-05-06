@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 import os
 from collections import abc
 from copy import deepcopy
@@ -12,6 +13,14 @@ from pptx.oxml.ns import qn
 from pptx.util import Pt
 
 from BibleExtractor import BibleConverter
+
+logger = logging.getLogger("ppt_util")
+fh = logging.FileHandler("ppt_log.log")
+fh.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+logger.setLevel(logging.INFO)
 
 
 class PresentationBuilder(object):
@@ -32,14 +41,18 @@ class PresentationBuilder(object):
         "template_song_verse",
     ]
 
-    def __init__(self) -> None:
-        self.presentation = Presentation("templates/malayalam_service_template.pptx")
+    def __init__(self, service_type) -> None:
+        logger.info("Created ppt object")
+        template = f"templates/{service_type}_service_template.pptx"
+        self.presentation = Presentation(template)
         self.template_dict = {
             shape.name: slide
             for slide in self.presentation.slides
             for shape in slide.shapes
             if shape.name in self.REQ_SLIDES
         }
+
+        logger.info(self.template_dict)
         with open("assets/kk_full.json", "r", encoding="utf-8") as kkfile:
             self.kk_dict = json.load(kkfile)
         self.bible_converter = BibleConverter()
@@ -216,6 +229,7 @@ class PresentationBuilder(object):
                         else:
                             para.font.size = Pt(40)
                             para.font.name = "Goudy Bookletter 1911"
+                        para.font.bold = True
                         # Hacky workaround to work with malayalam fonts
                         defrpr = para._element.pPr.defRPr
                         ea = etree.SubElement(defrpr, qn("a:cs"))
@@ -244,7 +258,12 @@ class PresentationBuilder(object):
 
 
 if __name__ == "__main__":
-    obj1 = PresentationBuilder()
+    service_type = (
+        "malayalam"
+        if int(input("Enter service type \n1.Malayalam\n2.English\n\n")) == 1
+        else "english"
+    )
+    obj1 = PresentationBuilder(service_type)
     [
         obj1.get_bible_portions(portion)
         for portion in ["first_lesson", "second_lesson", "epistle", "gospel"]
