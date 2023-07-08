@@ -108,7 +108,6 @@ class PresentationBuilder(object):
         return lyrics_slide
 
     def get_bible_portions(self, bib_portion, gui=False):
-
         if not gui:
             print("\033c", end="")
             portion_type = bib_portion
@@ -169,7 +168,6 @@ class PresentationBuilder(object):
         )
         for shape in first_slide.shapes:
             if shape.name in ["theme", "todays_date"]:
-
                 tf = shape.text_frame
                 tf.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
                 tf.vertical_anchor = MSO_VERTICAL_ANCHOR.MIDDLE
@@ -184,7 +182,6 @@ class PresentationBuilder(object):
                 tf.fit_text(font_family="Noto Serif Malayalam", max_size=40)
 
     def get_song(self, song_type, gui=False):
-
         if not gui:
             songs = input(f"\nEnter songs for {song_type.replace('_',' ')}: ").split(
                 ","
@@ -247,14 +244,14 @@ class PresentationBuilder(object):
             + datetime.timedelta(days=(6 - datetime.date.today().weekday() + 7) % 7)
         ).strftime("%-d %B, %Y")
         ppt_name = f"{next_sunday}.pptx"
-        os.chdir("/Users/gijomathew/Important/misc/Church/PPTs/")
-        if os.path.exists(f"{ppt_name}"):
-            os.remove(f"{ppt_name}")
-        self.presentation.save(f"{ppt_name}")
-        print(
-            f"PPT Successfully saved to /Users/gijomathew/Important/misc/Church/PPTs/{ppt_name}"
+        ppt_save_location = (
+            f"/Users/gijomathew/Important/misc/Church/PPTs/2023/{ppt_name}"
         )
-        os.system(f"open '{ppt_name}'")
+        if os.path.exists(ppt_save_location):
+            os.remove(ppt_save_location)
+        self.presentation.save(ppt_save_location)
+        print(f"PPT Successfully saved to {ppt_save_location}")
+        os.system(f"open '{ppt_save_location}'")
 
 
 if __name__ == "__main__":
@@ -263,9 +260,9 @@ if __name__ == "__main__":
         if int(input("Enter service type \n1.Malayalam\n2.English\n\n")) == 1
         else "english"
     )
-    obj1 = PresentationBuilder(service_type)
+    pb_obj = PresentationBuilder(service_type)
     [
-        obj1.get_bible_portions(portion)
+        pb_obj.get_bible_portions(portion)
         for portion in ["first_lesson", "second_lesson", "epistle", "gospel"]
     ]
     print("\033c", end="")
@@ -273,7 +270,7 @@ if __name__ == "__main__":
         "\nNote\n1. If multiple songs, enter comma separated. \n2. For doxology 1 enter dox1 and so on\n3. If song is from a book other than Kriteeya Geethangal, just type the song heading. (Lyrics wont be provided)"
     )
     [
-        obj1.get_song(song)
+        pb_obj.get_song(song)
         for song in (
             "opening_song",
             "between_lessons",
@@ -283,6 +280,7 @@ if __name__ == "__main__":
             "doxology",
         )
     ]
-    obj1.update_first_slide(input("\nEnter the theme for this Sunday: "))
+    if service_type == "malayalam":
+        pb_obj.update_first_slide(input("\nEnter the theme for this Sunday: "))
 
-    obj1.save_ppt()
+    pb_obj.save_ppt()
