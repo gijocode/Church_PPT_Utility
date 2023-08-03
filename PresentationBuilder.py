@@ -45,7 +45,7 @@ class PresentationBuilder(object):
 
     def __init__(self, service_type) -> None:
         logger.info("Created ppt object")
-        logger.info(f"Creating PPT on {datetime.date.today}")
+        logger.info(f"Creating PPT on {datetime.date.today()}")
         template = f"templates/{service_type}_service_template.pptx"
         self.presentation = Presentation(template)
         self.template_dict = {
@@ -259,7 +259,7 @@ class PresentationBuilder(object):
         print(f"PPT Successfully saved to {ppt_name}")
         logger.info(f"PPT Successfully saved to {ppt_name}")
         if operating_sys == "Darwin":
-            os.system(f"open {ppt_name}")
+            os.system(f"open '{ppt_name}'")
 
 
 if __name__ == "__main__":
