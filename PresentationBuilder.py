@@ -1,4 +1,5 @@
 import datetime
+import platform
 import json
 import logging
 import os
@@ -7,7 +8,7 @@ from copy import deepcopy
 
 import six
 from lxml import etree
-from pptx import Presentation
+from pptx import Presentation, exc
 from pptx.enum.text import MSO_AUTO_SIZE, MSO_VERTICAL_ANCHOR, PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Pt
@@ -21,6 +22,7 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 fh.setFormatter(formatter)
 logger.addHandler(fh)
 logger.setLevel(logging.INFO)
+operating_sys = platform.system()
 
 
 class PresentationBuilder(object):
@@ -43,6 +45,7 @@ class PresentationBuilder(object):
 
     def __init__(self, service_type) -> None:
         logger.info("Created ppt object")
+        logger.info(f"Creating PPT on {datetime.date.today}")
         template = f"templates/{service_type}_service_template.pptx"
         self.presentation = Presentation(template)
         self.template_dict = {
@@ -52,7 +55,6 @@ class PresentationBuilder(object):
             if shape.name in self.REQ_SLIDES
         }
 
-        logger.info(self.template_dict)
         with open("assets/kk_full.json", "r", encoding="utf-8") as kkfile:
             self.kk_dict = json.load(kkfile)
         self.bible_converter = BibleConverter()
@@ -158,6 +160,9 @@ class PresentationBuilder(object):
             for i in range(starting_verse, ending_verse + 1)
         ]
 
+        logger.info(
+            f"Retrieved bible portion for {portion_type} which is {bible_portion}"
+        )
         self.put_in_ppt(portion, "template_bible_verse", portion_type, 1)
         self.put_in_ppt(bible_portion, "template_bible_heading", portion_type, 1)
 
@@ -239,19 +244,22 @@ class PresentationBuilder(object):
             self.move_slide(-1, index_of_slide + 1 + i)
 
     def save_ppt(self):
-        next_sunday = (
-            datetime.date.today()
-            + datetime.timedelta(days=(6 - datetime.date.today().weekday() + 7) % 7)
-        ).strftime("%-d %B, %Y")
-        ppt_name = f"{next_sunday}.pptx"
-        ppt_save_location = (
-            f"/Users/gijomathew/Important/misc/Church/PPTs/2023/{ppt_name}"
-        )
-        if os.path.exists(ppt_save_location):
-            os.remove(ppt_save_location)
-        self.presentation.save(ppt_save_location)
-        print(f"PPT Successfully saved to {ppt_save_location}")
-        os.system(f"open '{ppt_save_location}'")
+        if operating_sys == "Darwin":
+            next_sunday = (
+                datetime.date.today()
+                + datetime.timedelta(days=(6 - datetime.date.today().weekday() + 7) % 7)
+            ).strftime("%-d %B, %Y")
+            # Change the below path to where you want the ppt saved
+            ppt_name = (
+                f"/Users/gijomathew/Important/misc/Church/PPTs/2023/{next_sunday}.pptx"
+            )
+        else:
+            ppt_name = "holy_communion.pptx"
+        self.presentation.save(ppt_name)
+        print(f"PPT Successfully saved to {ppt_name}")
+        logger.info(f"PPT Successfully saved to {ppt_name}")
+        if operating_sys == "Darwin":
+            os.system(f"open {ppt_name}")
 
 
 if __name__ == "__main__":
@@ -267,7 +275,7 @@ if __name__ == "__main__":
     ]
     print("\033c", end="")
     print(
-        "\nNote\n1. If multiple songs, enter comma separated. \n2. For doxology 1 enter dox1 and so on\n3. If song is from a book other than Kriteeya Geethangal, just type the song heading. (Lyrics wont be provided)"
+        "\nNote\n1. If multiple songs, enter comma separated. \n2. For doxology 1 enter dox1 and so on\n3. If song is from a book other than Kriteeya Geethangal, just type the song heading. (Lyrics won't be provided)"
     )
     [
         pb_obj.get_song(song)
@@ -281,6 +289,13 @@ if __name__ == "__main__":
         )
     ]
     if service_type == "malayalam":
-        pb_obj.update_first_slide(input("\nEnter the theme for this Sunday: "))
+        # In Windows sometimes the first slide fails
+        try:
+            pb_obj.update_first_slide(input("\nEnter the theme for this Sunday: "))
+        except Exception as e:
+            print(
+                "There was some error encountered when updating the first slide. Please make sure you edit it manually!"
+            )
+            logger.exception(e)
 
     pb_obj.save_ppt()
