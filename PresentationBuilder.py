@@ -1,8 +1,8 @@
 import datetime
-import platform
 import json
 import logging
 import os
+import platform
 from collections import abc
 from copy import deepcopy
 
@@ -259,6 +259,7 @@ class PresentationBuilder(object):
         print(f"PPT Successfully saved to {ppt_name}")
         logger.info(f"PPT Successfully saved to {ppt_name}")
         if operating_sys == "Darwin":
+            os.system(f"open '/Users/gijomathew/Important/misc/Church/PPTs/2023/'")
             os.system(f"open '{ppt_name}'")
 
 
