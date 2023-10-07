@@ -183,8 +183,8 @@ class PresentationBuilder(object):
                         else next_sunday.strftime("%-d %B, %Y")
                     )
                     para.font.name = "Goudy Bookletter 1911"
+                    para.font.size = Pt(40)
                     para.alignment = PP_ALIGN.CENTER
-                tf.fit_text(font_family="Noto Serif Malayalam", max_size=40)
 
     def get_song(self, song_type, gui=False):
         if not gui:
@@ -253,14 +253,14 @@ class PresentationBuilder(object):
             ppt_name = (
                 f"/Users/gijomathew/Important/misc/Church/PPTs/2023/{next_sunday}.pptx"
             )
-        else:
-            ppt_name = "holy_communion.pptx"
-        self.presentation.save(ppt_name)
-        print(f"PPT Successfully saved to {ppt_name}")
-        logger.info(f"PPT Successfully saved to {ppt_name}")
-        if operating_sys == "Darwin":
+            self.presentation.save(ppt_name)
             os.system(f"open '/Users/gijomathew/Important/misc/Church/PPTs/2023/'")
             os.system(f"open '{ppt_name}'")
+        else:
+            ppt_name = "holy_communion.pptx"
+            self.presentation.save(ppt_name)
+        print(f"PPT Successfully saved to {ppt_name}")
+        logger.info(f"PPT Successfully saved to {ppt_name}")
 
 
 if __name__ == "__main__":
