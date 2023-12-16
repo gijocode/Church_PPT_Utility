@@ -254,7 +254,7 @@ class PresentationBuilder(object):
                 f"/Users/gijomathew/Important/misc/Church/PPTs/2023/{next_sunday}.pptx"
             )
             self.presentation.save(ppt_name)
-            os.system(f"open '/Users/gijomathew/Important/misc/Church/PPTs/2023/'")
+            os.system("open '/Users/gijomathew/Important/misc/Church/PPTs/2023/'")
             os.system(f"open '{ppt_name}'")
         else:
             ppt_name = "holy_communion.pptx"
@@ -270,7 +270,7 @@ if __name__ == "__main__":
         else "english"
     )
     pb_obj = PresentationBuilder(service_type)
-    [
+    _ = [
         pb_obj.get_bible_portions(portion)
         for portion in ["first_lesson", "second_lesson", "epistle", "gospel"]
     ]
@@ -278,7 +278,7 @@ if __name__ == "__main__":
     print(
         "\nNote\n1. If multiple songs, enter comma separated. \n2. For doxology 1 enter dox1 and so on\n3. If song is from a book other than Kriteeya Geethangal, just type the song heading. (Lyrics won't be provided)"
     )
-    [
+    _ = [
         pb_obj.get_song(song)
         for song in (
             "opening_song",

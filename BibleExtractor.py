@@ -3,7 +3,6 @@ import json
 
 class BibleConverter:
     def __init__(self):
-
         self.bible_books_mal = [
             "ഉല്പത്തി",
             "പുറപ്പാടു്",
@@ -165,7 +164,6 @@ class BibleConverter:
             return ""
 
     def get_bible_portions(self, portion_type, gui=False):
-
         if not gui:
             print("\033c", end="")
             print(portion_type.replace("_", " ").upper())
