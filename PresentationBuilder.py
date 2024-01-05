@@ -251,10 +251,10 @@ class PresentationBuilder(object):
             ).strftime("%-d %B, %Y")
             # Change the below path to where you want the ppt saved
             ppt_name = (
-                f"/Users/gijomathew/Important/misc/Church/PPTs/2023/{next_sunday}.pptx"
+                f"/Users/gijomathew/Important/misc/Church/PPTs/2024/{next_sunday}.pptx"
             )
             self.presentation.save(ppt_name)
-            os.system("open '/Users/gijomathew/Important/misc/Church/PPTs/2023/'")
+            os.system("open '/Users/gijomathew/Important/misc/Church/PPTs/2024/'")
             os.system(f"open '{ppt_name}'")
         else:
             ppt_name = "holy_communion.pptx"
