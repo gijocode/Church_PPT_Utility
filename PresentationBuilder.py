@@ -46,7 +46,7 @@ class PresentationBuilder(object):
     def __init__(self, service_type) -> None:
         logger.info("Created ppt object")
         logger.info(f"Creating PPT on {datetime.date.today()}")
-        template = f"templates/{service_type}_service_template.pptx"
+        template = f"templates/{service_type}_template.pptx"
         self.presentation = Presentation(template)
         self.template_dict = {
             shape.name: slide
@@ -137,6 +137,9 @@ class PresentationBuilder(object):
                 bib_portion["type"],
             )
 
+        if portion_type == "all":
+            portion_type = ""
+
         # book, chapter, starting_verse, ending_verse = 1, 1, 2, 5
         bible_portion = [
             "{5}\n\n{4} {1}: {2}-{3}\n{0} {1}: {2}-{3}".format(
@@ -148,6 +151,8 @@ class PresentationBuilder(object):
                 portion_type.upper().replace("_", " "),
             )
         ]
+        if not portion_type:
+            bible_portion[0] = bible_portion[0].strip("\n")
         portion = [
             "{}\n\n{}".format(
                 self.bible_converter.extract_bible_portion(
@@ -227,7 +232,7 @@ class PresentationBuilder(object):
 
                         if template_name == "template_bible_heading":
                             para.font.name = "Noto Serif Malayalam"
-                            para.font.size = Pt(50)
+                            para.font.size = Pt(50) if after_slide else Pt(70)
                         else:
                             para.font.size = Pt(40)
                             para.font.name = "Goudy Bookletter 1911"
@@ -239,11 +244,15 @@ class PresentationBuilder(object):
                         para.alignment = PP_ALIGN.CENTER
 
             content_slides.append(verse_slide)
-        index_of_slide = self.presentation.slides.index(self.template_dict[after_slide])
+        index_of_slide = (
+            self.presentation.slides.index(self.template_dict[after_slide])
+            if after_slide
+            else 0
+        )
         for i in range(len(content_slides)):
             self.move_slide(-1, index_of_slide + 1 + i)
 
-    def save_ppt(self):
+    def save_ppt(self, ppt_name=None):
         if operating_sys == "Darwin":
             next_sunday = (
                 datetime.date.today()
@@ -251,25 +260,43 @@ class PresentationBuilder(object):
             ).strftime("%-d %B, %Y")
             # Change the below path to where you want the ppt saved
             ppt_name = (
-                f"/Users/gijomathew/Important/misc/Church/PPTs/2024/{next_sunday}.pptx"
+                (
+                    f"/Users/gijomathew/Important/misc/Church/PPTs/2024/{next_sunday}.pptx"
+                )
+                if not ppt_name
+                else ppt_name
             )
             self.presentation.save(ppt_name)
             os.system("open '/Users/gijomathew/Important/misc/Church/PPTs/2024/'")
             os.system(f"open '{ppt_name}'")
         else:
-            ppt_name = "holy_communion.pptx"
+            ppt_name = "holy_communion.pptx" if not ppt_name else ppt_name
             self.presentation.save(ppt_name)
         print(f"PPT Successfully saved to {ppt_name}")
         logger.info(f"PPT Successfully saved to {ppt_name}")
 
 
 if __name__ == "__main__":
-    service_type = (
-        "malayalam"
-        if int(input("Enter service type \n1.Malayalam\n2.English\n\n")) == 1
-        else "english"
+    choice = int(
+        input(
+            "Enter your choice \n1.Malayalam Service PPT\n2.English Service PPT\n3.Bible Portion PPT\n"
+        )
     )
+    if choice == 1:
+        service_type = "malayalam_service"
+    elif choice == 2:
+        service_type = "english_service"
+    elif choice == 3:
+        service_type = "bible_portion"
+    else:
+        raise ValueError("Invalid choice")
     pb_obj = PresentationBuilder(service_type)
+
+    if service_type == "bible_portion":
+        pb_obj.get_bible_portions("all")
+        pb_obj.save_ppt("bible_portion.pptx")
+        exit(0)
+
     _ = [
         pb_obj.get_bible_portions(portion)
         for portion in ["first_lesson", "second_lesson", "epistle", "gospel"]
