@@ -12,6 +12,7 @@ from pptx import Presentation, exc
 from pptx.enum.text import MSO_AUTO_SIZE, MSO_VERTICAL_ANCHOR, PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Pt
+from pptx.dml.color import RGBColor
 
 from BibleExtractor import BibleConverter
 
@@ -187,8 +188,14 @@ class PresentationBuilder(object):
                         if shape.name == "theme"
                         else next_sunday.strftime("%-d %B, %Y")
                     )
-                    para.font.name = "Goudy Bookletter 1911"
-                    para.font.size = Pt(40)
+                    para.font.name = "Goudy Bookletter 1911" if shape.name == "theme" else "Arial"
+                    para.font.size = Pt(50)
+                    para.font.color.rgb = (
+                        RGBColor(0, 13, 200)
+                        if shape.name == "theme"
+                        else RGBColor(235, 114, 8)
+                    )
+                    para.font.bold=True
                     para.alignment = PP_ALIGN.CENTER
 
     def get_song(self, song_type, gui=False):
@@ -316,14 +323,13 @@ if __name__ == "__main__":
             "doxology",
         )
     ]
-    if service_type == "malayalam":
-        # In Windows sometimes the first slide fails
-        try:
-            pb_obj.update_first_slide(input("\nEnter the theme for this Sunday: "))
-        except Exception as e:
-            print(
-                "There was some error encountered when updating the first slide. Please make sure you edit it manually!"
-            )
-            logger.exception(e)
+    # In Windows sometimes the first slide fails
+    try:
+        pb_obj.update_first_slide(input("\nEnter the theme for this Sunday: "))
+    except Exception as e:
+        print(
+            "There was some error encountered when updating the first slide. Please make sure you edit it manually!"
+        )
+        logger.exception(e)
 
     pb_obj.save_ppt()
