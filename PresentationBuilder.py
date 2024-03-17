@@ -125,9 +125,7 @@ class PresentationBuilder(object):
             book += (
                 39
                 if portion_type in ["second_lesson", "gospel"]
-                else 43
-                if portion_type == "epistle"
-                else 0
+                else 43 if portion_type == "epistle" else 0
             )
         else:
             book, chapter, starting_verse, ending_verse, portion_type = (
@@ -188,14 +186,16 @@ class PresentationBuilder(object):
                         if shape.name == "theme"
                         else next_sunday.strftime("%-d %B, %Y")
                     )
-                    para.font.name = "Goudy Bookletter 1911" if shape.name == "theme" else "Arial"
+                    para.font.name = (
+                        "Goudy Bookletter 1911" if shape.name == "theme" else "Arial"
+                    )
                     para.font.size = Pt(50)
                     para.font.color.rgb = (
                         RGBColor(0, 13, 200)
                         if shape.name == "theme"
                         else RGBColor(235, 114, 8)
                     )
-                    para.font.bold=True
+                    para.font.bold = True
                     para.alignment = PP_ALIGN.CENTER
 
     def get_song(self, song_type, gui=False):
@@ -239,7 +239,8 @@ class PresentationBuilder(object):
 
                         if template_name == "template_bible_heading":
                             para.font.name = "Noto Serif Malayalam"
-                            para.font.size = Pt(50) if after_slide else Pt(70)
+                            para.font.size = Pt(54)
+                            para.font.color.rgb = RGBColor(255, 255, 255)
                         else:
                             para.font.size = Pt(40)
                             para.font.name = "Goudy Bookletter 1911"
@@ -289,6 +290,7 @@ if __name__ == "__main__":
             "Enter your choice \n1.Malayalam Service PPT\n2.English Service PPT\n3.Bible Portion PPT\n"
         )
     )
+
     if choice == 1:
         service_type = "malayalam_service"
     elif choice == 2:
@@ -303,7 +305,6 @@ if __name__ == "__main__":
         pb_obj.get_bible_portions("all")
         pb_obj.save_ppt("bible_portion.pptx")
         exit(0)
-
     _ = [
         pb_obj.get_bible_portions(portion)
         for portion in ["first_lesson", "second_lesson", "epistle", "gospel"]
