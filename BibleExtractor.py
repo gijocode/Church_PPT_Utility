@@ -1,7 +1,11 @@
 import json
-
+from pyfzf.pyfzf import FzfPrompt
 
 class BibleConverter:
+
+    # If you have fzf installed in your path,
+    # set the below flag to True
+    FZF_INSTALLED = False
     def __init__(self):
         self.bible_books_mal = [
             "ഉല്പത്തി",
@@ -143,6 +147,8 @@ class BibleConverter:
         self.new_testament = self.bible_books_eng[39:]
         self.gospels = self.new_testament[:4]
         self.epistles = self.new_testament[4:-1]
+        if self.FZF_INSTALLED:
+            self.fzf = FzfPrompt()
 
         self.mapper = {
             "all": self.bible_books_eng,
@@ -212,17 +218,24 @@ class BibleConverter:
 
     def get_input_from_user(self, book_type="all"):
         books = self.mapper[book_type]
-        book_printer = []
-        formatter_template = "{0:20}|{1:20}|{2:20}|{3:20}|{4:20}"
-        for i, book in enumerate(books):
-            book_printer.append(f"{i+1}. {book}")
-            if len(book_printer) == 5:
-                print(formatter_template.format(*book_printer))
-                book_printer = []
-        for _ in range(5 - len(book_printer)):
-            book_printer.append("")
-        print(formatter_template.format(*book_printer))
-        book = int(input("\nEnter index of Book: ")) - 1
+
+        if not self.FZF_INSTALLED:
+            book_printer = []
+            formatter_template = "{0:20}|{1:20}|{2:20}|{3:20}|{4:20}"
+            for i, book in enumerate(books):
+                book_printer.append(f"{i+1}. {book}")
+                if len(book_printer) == 5:
+                    print(formatter_template.format(*book_printer))
+                    book_printer = []
+            for _ in range(5 - len(book_printer)):
+                book_printer.append("")
+            print(formatter_template.format(*book_printer))
+            book = int(input("\nEnter index of Book: ")) - 1
+        else:
+            book_name = self.fzf.prompt(books,"--height=~40% --border --border-label='| Select Book |'")[0]
+            book = books.index(book_name)
+            print("Book: ",book_name)
+
         chapter = int(input("\nEnter the chapter: ")) - 1
         starting_verse = int(input("\nEnter the starting verse: ")) - 1
         ending_verse = int(input("\nEnter the ending verse: ")) - 1
