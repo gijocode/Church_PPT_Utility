@@ -232,9 +232,9 @@ class BibleConverter:
             print(formatter_template.format(*book_printer))
             book = int(input("\nEnter index of Book: ")) - 1
         else:
-            book_name = self.fzf.prompt(books,"--height=~40% --border --border-label='| Select Book |'")[0]
+            book_name = self.fzf.prompt(books,"--layout=reverse-list --height=~40% --border=bold --border-label='| Select Book |' --no-info")[0]
             book = books.index(book_name)
-            print("Book: ",book_name)
+            print("Book:",book_name)
 
         chapter = int(input("\nEnter the chapter: ")) - 1
         starting_verse = int(input("\nEnter the starting verse: ")) - 1
