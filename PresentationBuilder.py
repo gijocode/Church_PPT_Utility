@@ -1,19 +1,19 @@
 import datetime
+import json
 import logging
 import os
 import platform
-import json
-import six
-from pptx import Presentation
-from collections import abc
-from pptx.enum.text import MSO_AUTO_SIZE, MSO_VERTICAL_ANCHOR, PP_ALIGN
-from pptx.util import Pt
-from pptx.dml.color import RGBColor
-from BibleExtractor import BibleExtractor
-from enum import Enum
 from copy import deepcopy
+from enum import Enum
+
+import six
+from BibleExtractor import BibleExtractor
 from lxml import etree
+from pptx import Presentation
+from pptx.dml.color import RGBColor
+from pptx.enum.text import MSO_AUTO_SIZE, MSO_VERTICAL_ANCHOR, PP_ALIGN
 from pptx.oxml.ns import qn
+from pptx.util import Pt
 
 logger = logging.getLogger("ppt_util")
 fh = logging.FileHandler("ppt_log.log")
@@ -25,10 +25,12 @@ logger.setLevel(logging.INFO)
 
 operating_sys = platform.system()
 
+
 class Service(Enum):
-    MALAYALAM=1
-    ENGLISH=2
-    BIBLE_PORTION=3
+    MALAYALAM = 1
+    ENGLISH = 2
+    BIBLE_PORTION = 3
+
 
 class PresentationBuilder:
     TEMPLATE_FOLDER = "templates"
@@ -73,7 +75,9 @@ class PresentationBuilder:
     def _load_template(self):
         template_file = os.path.join(
             self.TEMPLATE_FOLDER,
-            self.TEMPLATE_FILE_FORMAT.format(service_type=self.service_type.name.lower()),
+            self.TEMPLATE_FILE_FORMAT.format(
+                service_type=self.service_type.name.lower()
+            ),
         )
         return Presentation(template_file)
 
@@ -98,9 +102,7 @@ class PresentationBuilder:
 
         for shape in template_slide.shapes:
             el = shape.element
-            newel = copied_slide.shapes._spTree.insert_element_before(
-                deepcopy(el), "p:extLst"
-            )
+            copied_slide.shapes._spTree.insert_element_before(deepcopy(el), "p:extLst")
 
         for _, value in six.iteritems(template_slide.part.rels):
             if "notesSlide" not in value.reltype:
@@ -110,10 +112,10 @@ class PresentationBuilder:
 
         return copied_slide
 
-    def _get_next_sunday(self):
-        return (
-            datetime.date.today()
-            + datetime.timedelta(days=(6 - datetime.date.today().weekday() + 7) % 7)
+    @staticmethod
+    def _get_next_sunday():
+        return datetime.date.today() + datetime.timedelta(
+            days=(6 - datetime.date.today().weekday() + 7) % 7
         )
 
     @property
@@ -124,27 +126,28 @@ class PresentationBuilder:
         first_slide = self.template_dict["first_slide"]
         next_sunday = self._get_next_sunday()
         for shape in first_slide.shapes:
-            if shape.name in ["theme", "todays_date"]:
-                tf = shape.text_frame
-                tf.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-                tf.vertical_anchor = MSO_VERTICAL_ANCHOR.MIDDLE
-                for para in tf.paragraphs:
-                    para.text = (
-                        topic
-                        if shape.name == "theme"
-                        else next_sunday.strftime("%-d %B, %Y")
-                    )
-                    para.font.name = (
-                        "Goudy Bookletter 1911" if shape.name == "theme" else "Arial"
-                    )
-                    para.font.size = Pt(50)
-                    para.font.color.rgb = (
-                        RGBColor(0, 13, 200)
-                        if shape.name == "theme"
-                        else RGBColor(235, 114, 8)
-                    )
-                    para.font.bold = True
-                    para.alignment = PP_ALIGN.CENTER
+            if shape.name not in ["theme", "todays_date"]:
+                continue
+            tf = shape.text_frame
+            tf.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
+            tf.vertical_anchor = MSO_VERTICAL_ANCHOR.MIDDLE
+            for para in tf.paragraphs:
+                para.text = (
+                    topic
+                    if shape.name == "theme"
+                    else next_sunday.strftime("%-d %B, %Y")
+                )
+                para.font.name = (
+                    "Goudy Bookletter 1911" if shape.name == "theme" else "Arial"
+                )
+                para.font.size = Pt(50)
+                para.font.color.rgb = (
+                    RGBColor(0, 13, 200)
+                    if shape.name == "theme"
+                    else RGBColor(235, 114, 8)
+                )
+                para.font.bold = True
+                para.alignment = PP_ALIGN.CENTER
 
     def put_in_ppt(
         self,
@@ -157,29 +160,28 @@ class PresentationBuilder:
         for content in content_list[::-1]:
             verse_slide = self.duplicate_slide(self.template_dict[template_name])
             for shape in verse_slide.shapes:
-                if shape.name == template_name:
-                    tf = shape.text_frame
-                    tf.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
-                    tf.vertical_anchor = MSO_VERTICAL_ANCHOR.MIDDLE
-                    tf.clear()
-                    for para in tf.paragraphs:
-                        para.text = content
-                        if content.count("\n") < 6:
-                            para.line_spacing = line_spacing
-
-                        if template_name == "template_bible_heading":
-                            para.font.name = "Noto Serif Malayalam"
-                            para.font.size = Pt(54)
-                            para.font.color.rgb = RGBColor(255, 255, 255)
-                        else:
-                            para.font.size = Pt(40)
-                            para.font.name = "Goudy Bookletter 1911"
-                        para.font.bold = True
-                        # Hacky workaround to work with malayalam fonts
-                        defrpr = para._element.pPr.defRPr
-                        ea = etree.SubElement(defrpr, qn("a:cs"))
-                        ea.set("typeface", "Noto Serif Malayalam")
-                        para.alignment = PP_ALIGN.CENTER
+                if shape.name != template_name:
+                    continue
+                tf = shape.text_frame
+                tf.auto_size = MSO_AUTO_SIZE.SHAPE_TO_FIT_TEXT
+                tf.vertical_anchor = MSO_VERTICAL_ANCHOR.MIDDLE
+                tf.clear()
+                for para in tf.paragraphs:
+                    para.text = content
+                    if content.count("\n") < 6:
+                        para.line_spacing = line_spacing
+                    if template_name == "template_bible_heading":
+                        para.font.name = "Noto Serif Malayalam"
+                        para.font.size = Pt(54)
+                        para.font.color.rgb = RGBColor(255, 255, 255)
+                    else:
+                        para.font.size = Pt(40)
+                        para.font.name = "Goudy Bookletter 1911"
+                    para.font.bold = True
+                    defrpr = para._element.pPr.defRPr
+                    ea = etree.SubElement(defrpr, qn("a:cs"))
+                    ea.set("typeface", "Noto Serif Malayalam")
+                    para.alignment = PP_ALIGN.CENTER
 
             content_slides.append(verse_slide)
         index_of_slide = (
@@ -217,7 +219,7 @@ class PresentationBuilder:
 
         book += (
             39
-            if portion_type in ["second_lesson", "gospel"]
+            if portion_type in {"second_lesson", "gospel"}
             else 43 if portion_type == "epistle" else 0
         )
 
@@ -249,15 +251,17 @@ class PresentationBuilder:
         ]
 
         logger.info(
-            f"Retrieved bible portion for {portion_type} which is {bible_portion}"
+            "Retrieved bible portion for {} which is {}", portion_type, bible_portion
         )
         self.put_in_ppt(portion, "template_bible_verse", portion_type, 1)
         self.put_in_ppt(bible_portion, "template_bible_heading", portion_type, 1)
 
     def get_song(self, song_type):
-        songs = map(
-            lambda x: x.strip(),
-            input(f"\nEnter songs for {song_type.replace('_',' ')}: ").split(",")[::-1],
+        songs = (
+            x.strip()
+            for x in input(f"\nEnter songs for {song_type.replace('_',' ')}: ").split(
+                ","
+            )[::-1]
         )
         for song in songs:
             if not song.isdigit() and not song.startswith("dox"):
@@ -295,7 +299,7 @@ class PresentationBuilder:
             ppt_name = "holy_communion.pptx" if not ppt_name else ppt_name
             self.presentation.save(ppt_name)
         print(f"PPT Successfully saved to {ppt_name}")
-        logger.info(f"PPT Successfully saved to {ppt_name}")
+        logger.info("PPT Successfully saved to {}", ppt_name)
 
 
 if __name__ == "__main__":
@@ -305,7 +309,7 @@ if __name__ == "__main__":
                 "What presentation do you want to create? Enter the index:\n1. Malayalam Service\n2. English Service\n3. Bible Portion\n"
             )
         )
-        if choice in (1, 2, 3):
+        if choice in {1, 2, 3}:
             break
 
     service_type = Service(choice)
