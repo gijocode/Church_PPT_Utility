@@ -1,4 +1,5 @@
 import datetime
+from enum import Enum
 import json
 import logging
 import os
@@ -14,7 +15,7 @@ from pptx.oxml.ns import qn
 from pptx.util import Pt
 from pptx.dml.color import RGBColor
 
-from BibleExtractor import BibleConverter
+from BibleExtractor import BibleExtractor
 
 logger = logging.getLogger("ppt_util")
 fh = logging.FileHandler("ppt_log.log")
@@ -26,8 +27,14 @@ logger.setLevel(logging.INFO)
 operating_sys = platform.system()
 
 
-class PresentationBuilder(object):
-    REQ_SLIDES = [
+class Service(Enum):
+    MALAYALAM = 1
+    ENGLISH = 2
+    BIBLE_PORTION = 3
+
+
+class PresentationBuilder:
+    REQUIRED_SLIDES = (
         "first_slide",
         "communion",
         "doxology",
@@ -42,23 +49,32 @@ class PresentationBuilder(object):
         "template_bible_verse",
         "template_bible_heading",
         "template_song_verse",
-    ]
+    )
+    SONGS = (
+        "opening_song",
+        "between_lessons",
+        "birthday",
+        "offertory",
+        "communion",
+        "doxology",
+    )
+    PORTIONS = ("first_lesson", "second_lesson", "epistle", "gospel")
 
     def __init__(self, service_type) -> None:
         logger.info("Created ppt object")
         logger.info(f"Creating PPT on {datetime.date.today()}")
-        template = f"templates/{service_type}_template.pptx"
+        template = f"templates/{service_type.name.lower()}_service_template.pptx"
         self.presentation = Presentation(template)
         self.template_dict = {
             shape.name: slide
             for slide in self.presentation.slides
             for shape in slide.shapes
-            if shape.name in self.REQ_SLIDES
+            if shape.name in self.REQUIRED_SLIDES
         }
 
         with open("assets/kk_full.json", "r", encoding="utf-8") as kkfile:
             self.kk_dict = json.load(kkfile)
-        self.bible_converter = BibleConverter()
+        self.bible_converter = BibleExtractor()
 
     def duplicate_slide(self, template_slide):
         blank_slide_layout = self.presentation.slide_layouts[
@@ -110,31 +126,21 @@ class PresentationBuilder(object):
         lyrics_slide.insert(0, title)
         return lyrics_slide
 
-    def get_bible_portions(self, bib_portion, gui=False):
-        if not gui:
-            print("\033c", end="")
-            portion_type = bib_portion
-            print(portion_type.replace("_", " ").upper())
-            (
-                book,
-                chapter,
-                starting_verse,
-                ending_verse,
-            ) = self.bible_converter.get_input_from_user(portion_type)
+    def get_bible_portions(self, portion_type):
+        print("\033c", end="")
+        print(portion_type.replace("_", " ").upper())
+        (
+            book,
+            chapter,
+            starting_verse,
+            ending_verse,
+        ) = self.bible_converter.get_input_from_user(portion_type)
 
-            book += (
-                39
-                if portion_type in ["second_lesson", "gospel"]
-                else 43 if portion_type == "epistle" else 0
-            )
-        else:
-            book, chapter, starting_verse, ending_verse, portion_type = (
-                self.bible_converter.bible_books_eng.index(bib_portion["book"]),
-                int(bib_portion["chapter"]) - 1,
-                int(bib_portion["starting_verse"]) - 1,
-                int(bib_portion["ending_verse"]) - 1,
-                bib_portion["type"],
-            )
+        book += (
+            39
+            if portion_type in ["second_lesson", "gospel"]
+            else 43 if portion_type == "epistle" else 0
+        )
 
         if portion_type == "all":
             portion_type = ""
@@ -198,23 +204,17 @@ class PresentationBuilder(object):
                     para.font.bold = True
                     para.alignment = PP_ALIGN.CENTER
 
-    def get_song(self, song_type, gui=False):
-        if not gui:
-            songs = input(f"\nEnter songs for {song_type.replace('_',' ')}: ").split(
-                ","
-            )[::-1]
-            for song in songs:
-                if not song.isdigit() and not song.startswith("dox"):
-                    song_lyrics = [song]
-                else:
-                    song_lyrics = self.get_kk_lyrics(song)
-                self.put_in_ppt(song_lyrics, "template_song_verse", song_type, 1.5)
-        else:
-            song_nos, song_type = song_type["no"], song_type["type"]
-            songs = song_nos.split(",")[::-1]
-            for song_no in songs:
-                song_lyrics = self.get_kk_lyrics(song_no)
-                self.put_in_ppt(song_lyrics, "template_song_verse", song_type, 1.5)
+    def get_song(self, song_type):
+        songs = map(
+            lambda x: x.strip(),
+            input(f"\nEnter songs for {song_type.replace('_',' ')}: ").split(",")[::-1],
+        )
+        for song in songs:
+            if not song.isdigit() and not song.startswith("dox"):
+                song_lyrics = [song]
+            else:
+                song_lyrics = self.get_kk_lyrics(song)
+            self.put_in_ppt(song_lyrics, "template_song_verse", song_type, 1.5)
 
     def put_in_ppt(
         self,
@@ -285,52 +285,37 @@ class PresentationBuilder(object):
 
 
 if __name__ == "__main__":
-    choice = int(
-        input(
-            "Enter your choice \n1.Malayalam Service PPT\n2.English Service PPT\n3.Bible Portion PPT\n"
+    while True:
+        choice = int(
+            input(
+                "What presentation do you want to create? Enter the index:\n1. Malayalam Service\n2. English Service\n3. Bible Portion\n"
+            )
         )
-    )
+        if choice in (1, 2, 3):
+            break
+        print("\033c", end="")
 
-    if choice == 1:
-        service_type = "malayalam_service"
-    elif choice == 2:
-        service_type = "english_service"
-    elif choice == 3:
-        service_type = "bible_portion"
-    else:
-        raise ValueError("Invalid choice")
-    pb_obj = PresentationBuilder(service_type)
+    service_type = Service(choice)
+    pb = PresentationBuilder(service_type)
 
-    if service_type == "bible_portion":
-        pb_obj.get_bible_portions("all")
-        pb_obj.save_ppt("bible_portion.pptx")
+    if service_type == Service.BIBLE_PORTION:
+        pb.get_bible_portions("all")
+        pb.save_ppt("bible_portion.pptx")
         exit(0)
-    _ = [
-        pb_obj.get_bible_portions(portion)
-        for portion in ["first_lesson", "second_lesson", "epistle", "gospel"]
-    ]
+
+    _ = [pb.get_bible_portions(portion) for portion in pb.PORTIONS]
     print("\033c", end="")
     print(
-        "\nNote\n1. If multiple songs, enter comma separated. \n2. For doxology 1 enter dox1 and so on\n3. If song is from a book other than Kriteeya Geethangal, just type the song heading. (Lyrics won't be provided)"
+        'Note:\n1. If you need multiple songs (eg. for Communion) , separate them with commas.\n2. Use "dox1" for Doxology 1, "dox2" for Doxology 2, and so on.\n3. If the song is not from the book "Kristeeya Keerthanangal", simply type the song title. (Lyrics will not be provided).'
     )
-    _ = [
-        pb_obj.get_song(song)
-        for song in (
-            "opening_song",
-            "between_lessons",
-            "birthday",
-            "offertory",
-            "communion",
-            "doxology",
-        )
-    ]
+    _ = [pb.get_song(song) for song in pb.SONGS]
     # In Windows sometimes the first slide fails
     try:
-        pb_obj.update_first_slide(input("\nEnter the theme for this Sunday: "))
+        pb.update_first_slide(input("\nEnter the theme for this Sunday: "))
     except Exception as e:
         print(
             "There was some error encountered when updating the first slide. Please make sure you edit it manually!"
         )
         logger.exception(e)
 
-    pb_obj.save_ppt()
+    pb.save_ppt()

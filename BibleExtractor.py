@@ -1,11 +1,9 @@
-import json
+import json, os
 from pyfzf.pyfzf import FzfPrompt
 
-class BibleConverter:
 
-    # If you have fzf installed in your path,
-    # set the below flag to True
-    FZF_INSTALLED = False
+class BibleExtractor:
+
     def __init__(self):
         self.bible_books_mal = [
             "ഉല്പത്തി",
@@ -147,8 +145,7 @@ class BibleConverter:
         self.new_testament = self.bible_books_eng[39:]
         self.gospels = self.new_testament[:4]
         self.epistles = self.new_testament[4:-1]
-        if self.FZF_INSTALLED:
-            self.fzf = FzfPrompt()
+        self.fzf = FzfPrompt() if not os.system('fzf --version') else None
 
         self.mapper = {
             "all": self.bible_books_eng,
@@ -157,7 +154,7 @@ class BibleConverter:
             "epistle": self.epistles,
             "gospel": self.gospels,
         }
-        with open("assets/mal_bible.json", "r", encoding="utf-8") as bible:
+        with open("assets/malayalam_bible.json", "r", encoding="utf-8") as bible:
             self.malbible = json.load(bible)
 
         with open("assets/english_bible.json", "r", encoding="utf-8") as bible:
@@ -169,57 +166,10 @@ class BibleConverter:
         except IndexError:
             return ""
 
-    def get_bible_portions(self, portion_type, gui=False):
-        if not gui:
-            print("\033c", end="")
-            print(portion_type.replace("_", " ").upper())
-            (
-                book,
-                chapter,
-                starting_verse,
-                ending_verse,
-            ) = self.get_input_from_user(portion_type)
-
-            book += (
-                39
-                if portion_type in ["second_lesson", "gospel"]
-                else 43
-                if portion_type == "epistle"
-                else 0
-            )
-        else:
-            book, chapter, starting_verse, ending_verse = (
-                self.bible_books_eng.index(portion_type["book"]),
-                portion_type["chapter"],
-                portion_type["starting_verse"],
-                portion_type["ending_verse"],
-            )
-
-        # book, chapter, starting_verse, ending_verse = 1, 1, 2, 5
-        bible_portion = [
-            "{5}\n\n{4} {1}: {2}-{3}\n{0} {1}: {2}-{3}".format(
-                self.bible_books_eng[book],
-                chapter + 1,
-                starting_verse + 1,
-                ending_verse + 1,
-                self.bible_books_mal[book],
-                portion_type.upper().replace("_", " "),
-            )
-        ]
-        portion = [
-            "{}\n\n{}".format(
-                self.extract_bible_portion(self.malbible, book, chapter, i),
-                self.extract_bible_portion(self.engbible, book, chapter, i),
-            )
-            for i in range(starting_verse, ending_verse + 1)
-        ]
-
-        return bible_portion, portion
-
     def get_input_from_user(self, book_type="all"):
         books = self.mapper[book_type]
 
-        if not self.FZF_INSTALLED:
+        if not self.fzf:
             book_printer = []
             formatter_template = "{0:20}|{1:20}|{2:20}|{3:20}|{4:20}"
             for i, book in enumerate(books):
@@ -232,9 +182,12 @@ class BibleConverter:
             print(formatter_template.format(*book_printer))
             book = int(input("\nEnter index of Book: ")) - 1
         else:
-            book_name = self.fzf.prompt(books,"--layout=reverse-list --height=~40% --border=bold --border-label='| Select Book |' --no-info")[0]
+            book_name = self.fzf.prompt(
+                books,
+                "--layout=reverse-list --height=~40% --border=bold --border-label='| Select Book |' --no-info",
+            )[0]
             book = books.index(book_name)
-            print("Book:",book_name)
+            print("Book:", book_name)
 
         chapter = int(input("\nEnter the chapter: ")) - 1
         starting_verse = int(input("\nEnter the starting verse: ")) - 1
@@ -244,7 +197,7 @@ class BibleConverter:
 
 
 if __name__ == "__main__":
-    ob1 = BibleConverter()
+    ob1 = BibleExtractor()
 
     print(ob1.epistles)
     print(ob1.gospels)
