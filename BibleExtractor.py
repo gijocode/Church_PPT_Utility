@@ -184,7 +184,7 @@ class BibleExtractor:
         else:
             book_name = self.fzf.prompt(
                 books,
-                "--layout=reverse-list --height=~40% --border=bold --border-label='| Select Book |' --no-info",
+                "--layout=reverse-list --height=~40% --border=bold --no-info",
             )[0]
             book = books.index(book_name)
             print("Book:", book_name)
