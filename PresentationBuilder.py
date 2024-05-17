@@ -29,7 +29,8 @@ operating_sys = platform.system()
 class Service(Enum):
     MALAYALAM = 1
     ENGLISH = 2
-    BIBLE_PORTION = 3
+    ENGLISH_ARIAL = 3
+    BIBLE_PORTION = 4
 
 
 class PresentationBuilder:
@@ -306,10 +307,10 @@ if __name__ == "__main__":
     while True:
         choice = int(
             input(
-                "What presentation do you want to create? Enter the index:\n1. Malayalam Service\n2. English Service\n3. Bible Portion\n"
+                "What presentation do you want to create? Enter the index:\n1. Malayalam Service\n2. English Service\n3. English Service (Arial Font) \n4. Bible Portion\n"
             )
         )
-        if choice in {1, 2, 3}:
+        if choice in {1, 2, 3, 4}:
             break
 
     service_type = Service(choice)
