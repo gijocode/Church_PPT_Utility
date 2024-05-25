@@ -204,7 +204,7 @@ class PresentationBuilder:
         print(song_name)
         title = f"Song No: {self.kk_dict[song_no]['No']}\n{song_name.split('(')[0]}"
         if author := self.kk_dict[song_no].get("Author"):
-            title += f"\n\nComposer: {author}"
+            title += f"\n\nLyricist: {author}"
         lyrics_slide.insert(0, title)
         return lyrics_slide
 
