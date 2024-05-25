@@ -281,11 +281,11 @@ class PresentationBuilder:
         self.xml_slides.remove(slides[index])
 
     def save_ppt(self, ppt_name=None):
+        next_sunday = (
+            datetime.date.today()
+            + datetime.timedelta(days=(6 - datetime.date.today().weekday() + 7) % 7)
+        ).strftime("%-d %B, %Y")
         if operating_sys == "Darwin":
-            next_sunday = (
-                datetime.date.today()
-                + datetime.timedelta(days=(6 - datetime.date.today().weekday() + 7) % 7)
-            ).strftime("%-d %B, %Y")
             ppt_name = (
                 (
                     f"/Users/gijomathew/Important/misc/Church/PPTs/2024/{next_sunday}.pptx"
@@ -297,10 +297,10 @@ class PresentationBuilder:
             os.system("open '/Users/gijomathew/Important/misc/Church/PPTs/2024/'")
             os.system(f"open '{ppt_name}'")
         else:
-            ppt_name = "holy_communion.pptx" if not ppt_name else ppt_name
+            ppt_name = next_sunday if not ppt_name else ppt_name
             self.presentation.save(ppt_name)
         print(f"PPT Successfully saved to {ppt_name}")
-        logger.info("PPT Successfully saved to {}", ppt_name)
+        logger.info(f"PPT Successfully saved to {ppt_name}")
 
 
 if __name__ == "__main__":
