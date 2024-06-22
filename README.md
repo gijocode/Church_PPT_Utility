@@ -61,7 +61,7 @@ You can create your own custom templates for different types of church services.
 ### Note
 
 1. Currently, I was able to only source lyrics for Kristeeya Geethangal. Therefore only songs from that book will have lyrics shown.
-2. I noticed that the title slide does not get edited properly by this script on Windows. So by default I have disabled first slide editing for Windows. If you are using windows, make sure you manually edit the first slide.
+2. I highly encourage you to install [fzf](https://github.com/junegunn/fzf). This greatly improves the bible portion selection user interaction.
 
 Feel free to contribute to this project and share your feedback!
 

@@ -136,7 +136,7 @@ class PresentationBuilder:
                 para.text = (
                     topic
                     if shape.name == "theme"
-                    else next_sunday.strftime("%-d %B, %Y")
+                    else next_sunday.strftime("%d %B, %Y").lstrip('0')
                 )
                 para.font.name = (
                     "Goudy Bookletter 1911" if shape.name == "theme" else "Arial"
@@ -281,17 +281,11 @@ class PresentationBuilder:
         self.xml_slides.remove(slides[index])
 
     def save_ppt(self, ppt_name=None):
-        '''
         next_sunday = (
             datetime.date.today()
             + datetime.timedelta(days=(6 - datetime.date.today().weekday() + 7) % 7)
-        ).strftime("%-d %B, %Y")
-        '''
+        ).strftime("%d %B, %Y").lstrip('0')
         if operating_sys == "Darwin":
-            next_sunday = (
-                datetime.date.today()
-                + datetime.timedelta(days=(6 - datetime.date.today().weekday() + 7) % 7)
-            ).strftime("%-d %B, %Y")
             ppt_name = (
                 (
                     f"/Users/gijomathew/Important/misc/Church/PPTs/2024/{next_sunday}.pptx"
@@ -304,7 +298,7 @@ class PresentationBuilder:
             os.system(f"open '{ppt_name}'")
         else:
             #ppt_name = next_sunday if not ppt_name else ppt_name
-            ppt_name = "holy_communion.pptx"
+            ppt_name = f"{next_sunday}.pptx" if not ppt_name else ppt_name
             self.presentation.save(ppt_name)
         print(f"PPT Successfully saved to {ppt_name}")
         logger.info(f"PPT Successfully saved to {ppt_name}")
