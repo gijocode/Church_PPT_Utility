@@ -288,13 +288,13 @@ class PresentationBuilder:
         if operating_sys == "Darwin":
             ppt_name = (
                 (
-                    f"/Users/gijomathew/Important/misc/Church/PPTs/2024/{next_sunday}.pptx"
+                    f"/Users/gijomathew/Important/misc/Church/PPTs/2025/{next_sunday}.pptx"
                 )
                 if not ppt_name
                 else ppt_name
             )
             self.presentation.save(ppt_name)
-            os.system("open '/Users/gijomathew/Important/misc/Church/PPTs/2024/'")
+            os.system("open '/Users/gijomathew/Important/misc/Church/PPTs/2025/'")
             os.system(f"open '{ppt_name}'")
         else:
             #ppt_name = next_sunday if not ppt_name else ppt_name
@@ -313,6 +313,7 @@ if __name__ == "__main__":
         )
         if choice in {1, 2, 3, 4}:
             break
+        print("Invalid option. Please enter the correct option")
 
     service_type = Service(choice)
     pb = PresentationBuilder(service_type)
@@ -330,12 +331,6 @@ if __name__ == "__main__":
     )
     _ = [pb.get_song(song) for song in pb.SONGS]
 
-    try:
-        pb._update_first_slide(input("\nEnter the theme for this Sunday: "))
-    except Exception as e:
-        print(
-            "There was some error encountered when updating the first slide. Please make sure you edit it manually!"
-        )
-        logger.exception(e)
+    pb._update_first_slide(input("\nEnter the theme for this Sunday: "))
 
     pb.save_ppt()
