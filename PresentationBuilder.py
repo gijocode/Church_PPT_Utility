@@ -28,9 +28,8 @@ operating_sys = platform.system()
 
 class Service(Enum):
     MALAYALAM = 1
-    ENGLISH = 2
-    ENGLISH_ARIAL = 3
-    BIBLE_PORTION = 4
+    ENGLISH_ARIAL = 2
+    BIBLE_PORTION = 3
 
 
 class PresentationBuilder:
@@ -136,7 +135,7 @@ class PresentationBuilder:
                 para.text = (
                     topic
                     if shape.name == "theme"
-                    else next_sunday.strftime("%d %B, %Y").lstrip('0')
+                    else next_sunday.strftime("%d %B, %Y").lstrip("0")
                 )
                 para.font.name = (
                     "Goudy Bookletter 1911" if shape.name == "theme" else "Arial"
@@ -282,9 +281,13 @@ class PresentationBuilder:
 
     def save_ppt(self, ppt_name=None):
         next_sunday = (
-            datetime.date.today()
-            + datetime.timedelta(days=(6 - datetime.date.today().weekday() + 7) % 7)
-        ).strftime("%d %B, %Y").lstrip('0')
+            (
+                datetime.date.today()
+                + datetime.timedelta(days=(6 - datetime.date.today().weekday() + 7) % 7)
+            )
+            .strftime("%d %B, %Y")
+            .lstrip("0")
+        )
         if operating_sys == "Darwin":
             ppt_name = (
                 (
@@ -297,7 +300,7 @@ class PresentationBuilder:
             os.system("open '/Users/gijomathew/Important/misc/Church/PPTs/2025/'")
             os.system(f"open '{ppt_name}'")
         else:
-            #ppt_name = next_sunday if not ppt_name else ppt_name
+            # ppt_name = next_sunday if not ppt_name else ppt_name
             ppt_name = f"{next_sunday}.pptx" if not ppt_name else ppt_name
             self.presentation.save(ppt_name)
         print(f"PPT Successfully saved to {ppt_name}")
@@ -308,10 +311,10 @@ if __name__ == "__main__":
     while True:
         choice = int(
             input(
-                "What presentation do you want to create? Enter the index:\n1. Malayalam Service\n2. English Service\n3. English Service (Arial Font) \n4. Bible Portion\n"
+                "What presentation do you want to create? Enter the index:\n1. Malayalam Service\n2. English Service \n3. Bible Portion\n"
             )
         )
-        if choice in {1, 2, 3, 4}:
+        if choice in {1, 2, 3}:
             break
         print("Invalid option. Please enter the correct option")
 
