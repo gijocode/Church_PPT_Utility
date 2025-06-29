@@ -8,6 +8,7 @@ from enum import Enum
 
 import six
 from BibleExtractor import BibleExtractor
+from SongExtractor import SongExtractor
 from lxml import etree
 from pptx import Presentation
 from pptx.dml.color import RGBColor
@@ -256,19 +257,30 @@ class PresentationBuilder:
         self.put_in_ppt(portion, "template_bible_verse", portion_type, 1)
         self.put_in_ppt(bible_portion, "template_bible_heading", portion_type, 1)
 
-    def get_song(self, song_type):
-        songs = (
-            x.strip()
-            for x in input(f"\nEnter songs for {song_type.replace('_',' ')}: ").split(
-                ","
-            )[::-1]
-        )
-        for song in songs:
-            if not song.isdigit() and not song.startswith("dox"):
-                song_lyrics = [song]
-            else:
-                song_lyrics = self.get_kk_lyrics(song)
-            self.put_in_ppt(song_lyrics, "template_song_verse", song_type, 1.5)
+    def get_song(self, song_type, service_type, song_ext=None):
+        if service_type == Service.MALAYALAM:
+            songs = (
+                x.strip()
+                for x in input(
+                    f"\nEnter songs for {song_type.replace('_',' ')}: "
+                ).split(",")[::-1]
+            )
+            for song in songs:
+                if not song.isdigit() and not song.startswith("dox"):
+                    song_lyrics = [song]
+                else:
+                    song_lyrics = self.get_kk_lyrics(song)
+                self.put_in_ppt(song_lyrics, "template_song_verse", song_type, 1.5)
+        else:
+            no_of_songs = (
+                1
+                if not song_type == "communion"
+                else int(input("Enter the number of songs: "))
+            )
+            print(f"\nEnter songs for {song_type.replace('_',' ')}: ")
+            for _ in range(no_of_songs):
+                song_lyrics = song_ext.get_song()
+                self.put_in_ppt(song_lyrics, "template_song_verse", song_type, 1.5)
 
     def move_slide(self, old_index, new_index):
         slides = list(self.xml_slides)
@@ -332,7 +344,8 @@ if __name__ == "__main__":
     print(
         'Note:\n1. If you need multiple songs (eg. for Communion) , separate them with commas.\n2. Use "dox1" for Doxology 1, "dox2" for Doxology 2, and so on.\n3. If the song is not from the book "Kristeeya Keerthanangal", simply type the song title. (Lyrics will not be provided).'
     )
-    _ = [pb.get_song(song) for song in pb.SONGS]
+    song_ext = SongExtractor() if service_type == Service.ENGLISH_ARIAL else None
+    _ = [pb.get_song(song, service_type, song_ext) for song in pb.SONGS]
 
     pb._update_first_slide(input("\nEnter the theme for this Sunday: "))
 
