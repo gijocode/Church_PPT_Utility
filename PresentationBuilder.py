@@ -303,13 +303,12 @@ class PresentationBuilder:
         if operating_sys == "Darwin":
             ppt_name = (
                 (
-                    f"/Users/gijomathew/Important/misc/Church/PPTs/2025/{next_sunday}.pptx"
+                    f"/Users/gijomathew/Downloads/{next_sunday}.pptx"
                 )
                 if not ppt_name
                 else ppt_name
             )
             self.presentation.save(ppt_name)
-            os.system("open '/Users/gijomathew/Important/misc/Church/PPTs/2025/'")
             os.system(f"open '{ppt_name}'")
         else:
             # ppt_name = next_sunday if not ppt_name else ppt_name
